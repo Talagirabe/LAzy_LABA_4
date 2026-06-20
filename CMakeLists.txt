@@ -3,7 +3,7 @@ project(LAzy_LABA_4)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(LAzy_LABA_4 src/main.cpp
+add_executable(LAzy_LABA_4
         src/lazy/lazy_sequence.h
         src/generators/generator.h
         src/generators/rule_generator.h
@@ -22,6 +22,7 @@ add_executable(LAzy_LABA_4 src/main.cpp
         src/fsm/state_machine.h
         src/generators/sub_generator.h
         test/test.cpp
+       # src/main.cpp
 )
 
 

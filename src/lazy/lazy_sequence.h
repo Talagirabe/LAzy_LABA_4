@@ -56,7 +56,6 @@ public:
     Generator<T>* build() const override { return new InsertAtGenerator<T>(parent, item, index); }
 };
 
-// Замена std::function на строгий указатель на функцию: T (*transform)(const T&)
 template<class T>
 class MapBuilder : public AbstractGeneratorBuilder<T> {
     LazySequence<T>* parent;
@@ -66,7 +65,6 @@ public:
     Generator<T>* build() const override { return new MapGenerator<T>(parent, transform); }
 };
 
-// Замена std::function на строгий указатель на функцию: bool (*predicate)(const T&)
 template<class T>
 class FilterBuilder : public AbstractGeneratorBuilder<T> {
     LazySequence<T>* parent;
@@ -113,9 +111,7 @@ public:
     Generator<T>* build() const override { return new SubsequenceGenerator<T>(parent, start, length); }
 };
 
-// ============================================================================
 // ОСНОВНОЙ КЛАСС LAZY SEQUENCE
-// ============================================================================
 
 template<class T>
 class LazySequence : public Sequence<T> {
@@ -163,7 +159,7 @@ public:
             return memory_window->retrieve(index);
         }
 
-        // идем назад (ИСПРАВЛЕНО: вызов через интерфейс)
+        // идем назад
         if (index < latest_generated_index) {
             memory_window->reset();
             delete engine;
@@ -183,14 +179,14 @@ public:
         return memory_window->retrieve(index);
     }
 
-    const T& get(const Cardinal& index) {
-        if (index.get_omega_count() == 0) {
-            return get(index.get_offset());
-        }
+    const T& get(const Cardinal& index) override {
+    if (index.get_omega_count() == 0) {
+        return get(index.get_offset());
+    }
 
-        static T value;
-        value = engine->get(index);
-        return value;
+    static T value;
+    value = engine->get(index);
+    return value;
     }
 
     const T& get_first() override {
