@@ -89,10 +89,6 @@ public:
     Generator<int>* build() const override { return new FibonaGenerator(); }
 };
 
-// ==============================================================================
-// ФУНКЦИИ-ОБРАБОТЧИКИ (ЗАМЕНА ЛЯМБДАМ)
-// ==============================================================================
-
 int func_map_double(const int& x) { return x * 2; }
 bool func_filter_even(const int& x) { return x % 2 == 0; }
 

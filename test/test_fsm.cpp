@@ -2,8 +2,7 @@
 #include "../src/fsm/state_machine.h"
 #include "../LABA_2/mutableArraySequence.h"
 
-// Обычная функция-предикат
-bool is_binary_char(const char& c) { 
+bool is_binary_char(const char& c) {
     return c == '0' || c == '1'; 
 }
 
