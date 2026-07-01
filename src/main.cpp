@@ -19,7 +19,7 @@ int read_int(int min, int max) {
     return value;
 }
 
-// Предикаты (условия переходов) для датчиков Умного Дома
+// Предикаты для датчиков Умного Дома
 bool is_motion(const std::string& sensor_data) { return sensor_data == "ДВИЖЕНИЕ"; }
 bool is_silence(const std::string& sensor_data) { return sensor_data == "ТИШИНА"; }
 bool is_night(const std::string& sensor_data) { return sensor_data == "НОЧЬ"; }
@@ -31,7 +31,7 @@ void setup_smart_home_fsm(fsm::StateMachine<std::string>& machine) {
     machine.add_state("LIGHTS_ON", false);    // В комнате человек (включен свет и климат-контроль)
     machine.add_state("NIGHT_MODE", true);    // Человек лег спать (Финальное/Успешное состояние комфорта)
 
-    // Указываем начальное состояние — комната изначально пуста
+    // Указываем начальное состояние
     machine.set_initial_state("EMPTY_ROOM");
 
     // 2. Настраиваем логику переходов (Граф автомата)
@@ -50,7 +50,7 @@ void setup_smart_home_fsm(fsm::StateMachine<std::string>& machine) {
 }
 
 int main() {
-    // Инициализируем автомат Умного Дома
+// Инициализируем автомат Умного Дома
     fsm::StateMachine<std::string> smart_home;
     setup_smart_home_fsm(smart_home);
 
@@ -65,18 +65,37 @@ int main() {
 
         if (choice == 1) {
             std::cout << "\nВыберите жизненный сценарий:\n";
-            std::cout << "  1. Человек зашел в комнату и лег спать (ДВИЖЕНИЕ -> НОЧЬ)\n";
-            std::cout << "  2. Человек зашел, побыл и ушел (ДВИЖЕНИЕ -> ТИШИНА)\n";
+            std::cout << "  1. Идеальный вечер: зашел и лег спать (ДВИЖЕНИЕ -> НОЧЬ)\n";
+            std::cout << "  2. Короткий визит: зашел, побыл и ушел (ДВИЖЕНИЕ -> ТИШИНА)\n";
+            std::cout << "  3. Полный цикл: вечер, сон и утро (ДВИЖЕНИЕ -> НОЧЬ -> УТРО)\n";
+            std::cout << "  4. Сложный день: зашел, ушел, снова зашел и уснул (ДВИЖЕНИЕ -> ТИШИНА -> ДВИЖЕНИЕ -> НОЧЬ)\n";
+            std::cout << "  5. Сбой датчика: сигнал из пустой комнаты (НОЧЬ)\n";
             std::cout << "Ваш выбор: ";
-            int scenario = read_int(1, 2);
 
-            // Создаем последовательность для сигналов датчиков
+            int scenario = read_int(1, 5);
+
+            // Создаем последовательность для сигналов датчиков из Лабы 2
             Sequence<std::string>* sensor_sequence = new MutableArraySequence<std::string>();
 
             if (scenario == 1) {
+                // Успешный финал в NIGHT_MODE (true)
                 sensor_sequence = sensor_sequence->append("ДВИЖЕНИЕ")->append("НОЧЬ");
-            } else {
+            }
+            else if (scenario == 2) {
+                // Возврат в EMPTY_ROOM (false, так как не финал)
                 sensor_sequence = sensor_sequence->append("ДВИЖЕНИЕ")->append("ТИШИНА");
+            }
+            else if (scenario == 3) {
+                // Переход EMPTY_ROOM -> LIGHTS_ON -> NIGHT_MODE -> LIGHTS_ON (false, утро — не финал)
+                sensor_sequence = sensor_sequence->append("ДВИЖЕНИЕ")->append("НОЧЬ")->append("УТРО");
+            }
+            else if (scenario == 4) {
+                // Длинная цепочка переходов, финал в NIGHT_MODE (true)
+                sensor_sequence = sensor_sequence->append("ДВИЖЕНИЕ")->append("ТИШИНА")->append("ДВИЖЕНИЕ")->append("НОЧЬ");
+            }
+            else if (scenario == 5) {
+                // Автомат должен заклинить на первом же шаге и вернуть false.
+                sensor_sequence = sensor_sequence->append("НОЧЬ");
             }
 
             // Упаковываем ленивые сигналы в поток ввода
@@ -91,19 +110,24 @@ int main() {
 
             sensor_stream.close();
 
-            std::cout << "\n[ТЕКУЩИЙ РЕЖИМ СИСТЕМЫ]: " << smart_home.get_current_state() << "\n";
+            std::cout << "\n[КОНЕЧНЫЙ РЕЖИМ СИСТЕМЫ]: " << smart_home.get_current_state() << "\n";
 
             if (is_comfortable_night) {
-                std::cout << "РЕЗУЛЬТАТ: В комнате активирован комфортный ночной режим (свет приглушен, климат +22°C).\n";
+                std::cout << "РЕЗУЛЬТАТ: Поток успешно обработан. Система зафиксирована в комфортном ночном режиме (NIGHT_MODE).\n";
             } else {
-                std::cout << "РЕЗУЛЬТАТ: Система находится в штатном дневном/сберегающем режиме.\n";
+                if (smart_home.get_current_state() == "EMPTY_ROOM" && scenario == 5) {
+                    std::cout << "РЕЗУЛЬТАТ: Обнаружена аномалия! Автомат отверг некорректный поток сигналов (Защита сработала).\n";
+                } else if (smart_home.get_current_state() == "LIGHTS_ON") {
+                    std::cout << "РЕЗУЛЬТАТ: Поток успешно обработан. В комнате горит стандартный свет, работает климат-контроль.\n";
+                } else {
+                    std::cout << "РЕЗУЛЬТАТ: Поток обработан. Система вернулась в энергосберегающий режим ожидания.\n";
+                }
             }
             std::cout << "-----------------------------------------------------------\n";
 
             delete sensor_sequence;
         }
     }
-
     std::cout << "Система отключена. До свидания!\n";
     return 0;
 }

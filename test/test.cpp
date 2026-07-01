@@ -11,7 +11,231 @@
 
 using namespace std;
 
-class ArithmeticGenerator : public Generator<int> {
+class GeomGenerator : public Generator<int> {
+    private:
+    int value;
+    int start;
+    int step;
+    public:
+    GeomGenerator(int start, int step) : start(start), step(step), value(start) {}
+    int get_next() override {
+        int res = value;
+        value *= step;
+        return res;
+    }
+    int get(const Cardinal &index) override {
+        int target = start;
+        for (int i = 1; i <= index.get_offset(); i++) {
+            target*=step;
+        }
+        return target;
+    }
+    bool has_next() const override { return true; }
+};
+
+class GeomBuilder : public AbstractGeneratorBuilder<int> {
+    private:
+    int start;
+    int step;
+    public:
+    GeomBuilder(int start, int step) : start(start), step(step) {}
+    Generator<int> * build() const override {
+        return new GeomGenerator(start,step);
+    }
+};
+
+int main() {
+    LazySequence<int>* C = new LazySequence(new GeomBuilder(1,2), Cardinal::infinity(),100);
+    LazySequence<int>* B = new LazySequence(new GeomBuilder(1,3), Cardinal::infinity(),100);
+    LazySequence<int>* A = new LazySequence(new GeomBuilder(1,5), Cardinal::infinity(),100);
+
+    LazySequence<int>* res1 = A->take(10);
+
+    LazySequence<int>* res = res1->concat(B);
+
+    std::cout << res->get(Cardinal(0,120)) << std::endl;
+    std::cout << res->get(Cardinal(0,10)) << std::endl;
+    std::cout << res->get(Cardinal(0,11)) << std::endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+class FibonaGeneratoR : public Generator<int> {
+private:
+    int a_n;
+    int b_n;
+    int c_n;
+    int current_index;
+public:
+    FibonaGeneratoR(): a_n(0), b_n(1),current_index(0) {}
+
+    int get_next() override
+    {
+        if (current_index == 0) {
+            current_index++;
+
+            return a_n;
+        }
+        if (current_index == 1) {
+            current_index++;
+
+            return b_n;
+        }
+        else{
+            c_n = a_n + b_n;
+            a_n = b_n;
+            b_n = c_n;
+            current_index++;
+            return c_n;
+        }
+    }
+    int get(const Cardinal &index) override{
+        int target = index.get_offset();
+        if (target == 0) return 0;
+        if (target == 1) return 1;
+
+        // Локальные переменные для независимого расчета
+        int loc_a = 0;
+        int loc_b = 1;
+        int loc_c = 0;
+
+        for (int i = 2; i <= target; i++) {
+            loc_c = loc_a + loc_b;
+            loc_a = loc_b;
+            loc_b = loc_c;
+        }
+        return loc_c;
+    }
+    bool has_next() const override { return true; }
+};
+
+class FibonaBuilder : public AbstractGeneratorBuilder<int> {
+    public:
+    FibonaBuilder(){}
+    Generator<int> * build() const override {
+        return new FibonaGeneratoR();
+    }
+};
+int func_fib(const int& x) {
+    return 2*x;
+}
+int main() {
+    LazySequence<int>* A = new LazySequence(new FibonaBuilder,Cardinal::infinity(),100);
+    LazySequence<int>* res = A->map(func_fib);
+    std::cout << res->get(Cardinal(0,5)) << std::endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*class ArifGenerator : public Generator<int> {
+    private:
+    int start;
+    int step;
+    public:
+    ArifGenerator(int start=0, int step=0): start(start), step(step) {}
+    int get_next() override {
+        int res = start;
+        start += step;
+        return res;
+    };
+    int get(const Cardinal &index) override {
+        return start + step*index.get_offset();
+    };
+    bool has_next() const override {
+        return true;
+    };
+};
+
+class ArifBilder : public AbstractGeneratorBuilder<int> {
+private:
+    int start;
+    int step;
+public:
+    ArifBilder(int sta, int ste):start(sta), step(ste) {}
+
+    Generator<int> *build() const override {
+        return new ArifGenerator(start, step);
+    }
+};
+
+int func(const int& x) {
+    return 10*x;
+}
+int main() {
+    ArifBilder* b1 = new ArifBilder(0,1);
+    ArifBilder* b2 = new ArifBilder(0,-1);
+    ArifBilder* b3 = new ArifBilder(42,0);
+
+
+    LazySequence<int> * A = new LazySequence<int> (b1,Cardinal::infinity(),100);
+    LazySequence<int> * B = new LazySequence<int> (b2,Cardinal::infinity(),100);
+    LazySequence<int> * C = new LazySequence<int> (b3,Cardinal::infinity(),100);
+
+    LazySequence<int>* res_map = C->map(func);
+    std::cout << res_map->get(Cardinal(0,5)) << std::endl;
+    LazySequence<int>* res = A->concat(B)->concat(C);
+    // Небольшая проверка в консоль, чтобы увидеть магию в рантайме:
+    std::cout << "Element from A: " << res->get(Cardinal(0, 5)) << std::endl;  // 5
+    std::cout << "Element from B: " << res->get(Cardinal(1, 0)) << std::endl;  // 0
+    std::cout << "Element from C: " << res->get(Cardinal(2, 0)) << std::endl;  // 42
+
+    // Очистка памяти
+    delete res;
+    delete A; delete B; delete C;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/*class ArithmeticGenerator : public Generator<int> {
 private:
     int current_val;
     int step_val;
@@ -196,6 +420,9 @@ void TestStateMachine() {
 }
 
 int main() {
+    LazySequence<int> a;
+    a.append(1);
+
     cout << "========================================" << endl;
     cout << " Starting Automated Tests..." << endl;
     cout << "========================================" << endl;
@@ -209,4 +436,4 @@ int main() {
     cout << " ALL TESTS PASSED SUCCESSFULLY! " << endl;
     cout << "========================================" << endl;
     return 0;
-}
+}*/

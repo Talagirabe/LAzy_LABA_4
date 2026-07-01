@@ -12,7 +12,7 @@ private:
     int max_size;            // максимальный размер окна
     int current_elements;    // сколько сейчас элементов внутри
 
-    int physical_head_pos;   // где в памяти начало
+    int physical_head_pos;   // где в памяти начало номер ячейки
     int logical_start_idx;   // какой индекс у первого элемента
     int logical_end_idx;     // какой индекс у последнего
 
@@ -20,8 +20,8 @@ public:
     explicit WindowedCache(int limit = 100);
 
     bool is_empty() const;
-    int get_size() const;
-    int get_limit() const;
+    int get_size() const; // уже есть
+    int get_limit() const; // максимум
 
     int get_start_bound() const;
     int get_end_bound() const;

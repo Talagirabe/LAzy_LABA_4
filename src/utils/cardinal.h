@@ -7,7 +7,7 @@ class Cardinal {
 
 private:
     int omega_count; // кол-во бесконечностей
-    int offset;
+    int offset;      // Конечное число
 
 public:
 

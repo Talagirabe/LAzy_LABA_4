@@ -198,7 +198,7 @@ const T& Sequence<T>::operator[](int index) const {
 }
 
 template<class T>
-bool Sequence<T>::operator==(const Sequence<T> &other) const { // нужен ли?
+bool Sequence<T>::operator==(const Sequence<T> &other) const {
     if (this->get_length() != other.get_length())
         return false;
 
@@ -247,7 +247,7 @@ Option<T> Sequence<T>::try_get_last() const{
 
 template<class T>
 Option<T> Sequence<T>::try_get(int index) const{
-    if (index > this->get_length() || index < 0)
+    if (index >= this->get_length() || index < 0)
         return Option<T>();
 
     return Option<T>(this->get(index));

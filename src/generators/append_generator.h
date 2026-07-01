@@ -5,7 +5,8 @@
 #include "../../LABA_2/sequence.h"
 #include <stdexcept>
 
-//Ленивый декоратор добавления в конец.
+// добавление в конец
+
 template<class T>
 class AppendGenerator : public Generator<T> {
 private:

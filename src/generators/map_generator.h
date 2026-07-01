@@ -3,12 +3,10 @@
 
 #include "generator.h"
 #include "../utils/cardinal.h"
-// ИСПРАВЛЕНО: Удалили #include <functional>
 
 template<class T>
 class MapGenerator : public Generator<T> {
 public:
-    // ИСПРАВЛЕНО: Конструктор теперь принимает строгий указатель на функцию
     MapGenerator(Sequence<T>* source, T (*transform)(const T&));
 
     T get_next() override;
@@ -17,11 +15,10 @@ public:
 
 private:
     Sequence<T>* source;                  // Исходная последовательность
-    T (*transform)(const T&);             // ИСПРАВЛЕНО: Чистый указатель на функцию
+    T (*transform)(const T&);             // указатель на функцию
     int current_index;                    // Курсор
 };
 
-// ИСПРАВЛЕНО: Сигнатура конструктора и удален std::move (указатели копируются напрямую)
 template<class T>
 MapGenerator<T>::MapGenerator(Sequence<T>* source, T (*transform)(const T&))
     : source(source), transform(transform), current_index(0) {}
@@ -32,7 +29,7 @@ T MapGenerator<T>::get_next() {
     T value = source->get(current_index);
     current_index++;
 
-    // 2. Прогоняем его через функцию (синтаксис вызова указателя такой же!)
+    // 2. Прогоняем его через функцию
     return transform(value);
 }
 

@@ -59,7 +59,7 @@ public:
 
     void close() override { file.close(); opened = false; }
     bool is_open() const override { return opened; }
-    bool is_end_of_stream() const override { return file.eof(); }
+    bool is_end_of_stream() const override { return file.eof(); } //возвращает true, если мы уперлись в конец файла (End Of File)
     bool can_seek() const override { return true; }
     bool can_go_back() const override { return true; }
     int get_position() const override { return position; }

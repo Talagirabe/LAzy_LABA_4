@@ -21,8 +21,8 @@ add_executable(LAzy_LABA_4
         src/utils/windowed_cache.h
         src/fsm/state_machine.h
         src/generators/sub_generator.h
-        test/test.cpp
-       # src/main.cpp
+        #test/test.cpp
+        src/main.cpp
 )
 
 

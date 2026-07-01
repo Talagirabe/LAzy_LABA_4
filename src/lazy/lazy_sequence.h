@@ -180,6 +180,21 @@ public:
     }
 
     const T& get(const Cardinal& index) override {
+        // Явная проверка границ:
+        bool is_out_of_bounds = false;
+
+        if (index.get_omega_count() > seq_length.get_omega_count()) {
+            is_out_of_bounds = true; // Запросили больше бесконечностей, чем есть
+        }
+        else if (index.get_omega_count() == seq_length.get_omega_count()) {
+            if (index.get_offset() >= seq_length.get_offset()) {
+                is_out_of_bounds = true; // Бесконечности равны, но смещение больше или равно
+            }
+        }
+
+        if (is_out_of_bounds) {
+            throw std::out_of_range("LazySequence: Index is out of bounds!");
+        }
     if (index.get_omega_count() == 0) {
         return get(index.get_offset());
     }
@@ -212,7 +227,7 @@ public:
 
     class LazyEnumerator : public IEnumerator<T> {
     private:
-        LazySequence<T>* parent_seq; //указатель на род последовательность
+        LazySequence<T>* parent_seq; //указатель на родную последовательность
         int current_pos; // курсор
 
     public:

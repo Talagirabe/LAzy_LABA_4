@@ -3,7 +3,6 @@
 
 #include <string>
 #include <stdexcept>
-#include <memory>
 #include <vector>
 #include "../streams/sequence_streams.h"
 
@@ -28,18 +27,16 @@ public:
 
     // Проверка: можно ли прямо сейчас пройти
     bool can_transition(const std::string& current_state, const T& input) const {
-        // Проходим, если мы находимся в правильном начале И символ подошел под правило
+        // Проходим, если мы находимся в правильном начале и символ подошел под правило
         return (current_state == from_state) && condition_(input);
     }
 
-    // Возвращает имя состояния, в которое ведет эта стрелочка
     std::string get_next_state() const { return to_state; }
 
 private:
     std::string from_state; // Из какого состояния выходим
     std::string to_state;   // В какое переходим
 
-    // Прямой указатель на функцию-предикат
     bool (*condition_)(const T&);
 };
 
@@ -49,11 +46,18 @@ class StateMachine {
 public:
     StateMachine() : current_state_id_("") {}
 
+    ~StateMachine() {
+        for (State* state : states_) {
+            delete state; // Освобождаем память каждого состояния в куче
+        }
+        states_.clear();
+    }
+
     void add_state(const std::string& id, bool is_final = false) {
         if (find_state(id) != -1) {
             throw std::invalid_argument("StateMachine: State already exists");
         }
-        states_.push_back(std::make_shared<State>(id, is_final));
+        states_.push_back(new State(id, is_final));
     }
 
     // Установка стартового состояния (откуда начинаем)
@@ -65,7 +69,7 @@ public:
         current_state_id_ = id;
     }
 
-    // Принимаем указатель на функцию-проверку.
+    // Принимаем указатель на предикат
     void add_transition(const std::string& from, const std::string& to, bool (*condition)(const T&)) {
         if (find_state(from) == -1 || find_state(to) == -1) {
             throw std::invalid_argument("StateMachine: Invalid from/to state in transition");
@@ -108,7 +112,7 @@ public:
     std::string get_current_state() const { return current_state_id_; }
 
 private:
-    std::vector<std::shared_ptr<State>> states_; // Список всех состояний
+    std::vector<State*> states_;                 // Список всех состояний
     std::vector<Transition<T>> transitions_;     // Список всех переходов
 
     std::string initial_state_id_; // Имя стартового состояния
